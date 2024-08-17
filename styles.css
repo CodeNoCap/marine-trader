@@ -1,0 +1,248 @@
+body {
+    font-family: 'Outfit', sans-serif;
+    margin: 0;
+    padding: 0;
+    background: linear-gradient(135deg, #f0f0f0, #e0e0e0);
+    color: navy;
+    box-sizing: border-box;
+}
+
+header {
+    padding: 20px 166px;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    justify-content: space-between;
+}
+
+.logo {
+    height: 50px;
+    margin-right: 50px;
+}
+
+nav {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+}
+
+nav a {
+    margin: 0 20px;
+    font-size: 18px;
+    color: navy;
+    text-decoration: none;
+    font-weight: bold;
+    transition: color 0.3s, border-bottom 0.3s;
+    padding-bottom: 5px;
+}
+
+nav a:hover {
+    color: white;
+    border-bottom: 2px solid navy;
+}
+
+.user-login {
+    display: flex;
+    align-items: center;
+    color: navy;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.user-login .material-icons {
+    margin-right: 10px;
+}
+
+hr {
+    border: 0;
+    height: 2px;
+    background-color: navy;
+    margin: 0;
+    position: relative;
+    top: -1px;
+}
+
+
+.content {
+    padding: 50px 166px;
+    max-width: 100%;
+}
+
+h1 {
+    font-size: 44px;
+    text-align: left;
+    margin-left: 20px;
+    margin-bottom: 40px;
+    font-weight: 1200;
+}
+
+.holdings-cards {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 50px;
+}
+
+.card {
+    background: rgba(60, 60, 90, 0.8);
+    border-radius: 12px;
+    padding: 20px;
+    flex: 1;
+    margin: 0 15px;
+    color: white;
+    text-align: center;
+    border: 2px solid navy;
+    transition: transform 0.3s ease;
+}
+
+.card:hover {
+    transform: scale(1.05);
+}
+
+.card h2 {
+    margin-bottom: 10px;
+    font-size: 22px;
+}
+
+.card p {
+    font-size: 32px;
+    font-weight: bold;
+}
+
+.glow {
+    box-shadow: 0 0 15px rgba(0, 123, 255, 0.5);
+}
+
+.table-section {
+    margin-bottom: 50px;
+    position: relative;
+}
+
+.table-section h2 {
+    font-size: 32px;
+    margin-bottom: 20px;
+}
+
+.add-button {
+    position: absolute;
+    right: 0;
+    top: -10px;
+    background-color: #7d8597;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.add-button:hover {
+    background-color: white;
+    color: #7d8597;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: rgba(60, 60, 90, 0.8);
+    border-radius: 12px;
+    color: white;
+    border: none;
+}
+
+th, td {
+    padding: 15px;
+    text-align: left;
+    border-bottom: 1px solid #d4d4d4;
+    cursor: pointer;
+}
+
+thead {
+    background: rgba(60, 60, 90, 0.9);
+}
+
+/* Popup Modal Styles */
+.popup {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+}
+
+.popup-content {
+    background-color: white;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 500px;
+    border-radius: 12px;
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+#investmentForm label {
+    display: block;
+    margin: 15px 0 5px;
+}
+
+#investmentForm input, button {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+button[type="submit"] {
+    background-color: navy;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+button[type="submit"]:hover {
+    background-color: limegreen;
+}
+
+/* Responsive Styles */
+@media (max-width: 1024px) {
+    header, hr, .content {
+        padding-left: 30px;
+        padding-right: 30px;
+    }
+
+    .holdings-cards {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .card {
+        margin: 10px 0;
+    }
+}

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marine Trader</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <img src="./assets/icon.png" alt="Marine Trader Logo" class="logo">
+            <nav>
+                <a href="#">About Us</a>
+                <a href="#holdings">Holdings</a>
+                <a href="#">Services</a>
+            </nav>
+            <div class="user-login">
+                <span class="material-icons">person</span>
+                <span>Marine Trader</span>
+            </div>
+        </div>
+ 
+    </header>
+    <hr>
+    <main id="holdings" class="content">
+        <h1>HOLDINGS</h1>
+        <section class="holdings-cards">
+            <div class="card glow" id="availableBalance">
+                <h2>Available Balance</h2>
+                <p>₱0.00</p>
+            </div>
+            <div class="card glow" id="totalInvestment">
+                <h2>Total Investment</h2>
+                <p>₱0.00</p>
+            </div>
+            <div class="card" id="profitLoss">
+                <h2>Profit & Losses</h2>
+                <p>₱0.00</p>
+            </div>
+        </section>
+
+        <section class="table-section">
+            <h2>Active Investments</h2>
+            <button class="add-button" onclick="openPopup('ai')">
+                <span class="material-icons">add</span>
+            </button>
+            <table id="activeInvestmentsTable">
+                <thead>
+                    <tr>
+                        <th>Asset</th>
+                        <th>Amount</th>
+                        <th>Value</th>
+                        <th>Pool</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Data Rows here -->
+                </tbody>
+            </table>
+        </section>
+
+        <section class="table-section">
+            <h2>Investment History</h2>
+            <button class="add-button" onclick="openPopup('ih')">
+                <span class="material-icons">add</span>
+            </button>
+            <table id="investmentHistoryTable">
+                <thead>
+                    <tr>
+                        <th>Asset</th>
+                        <th>Type</th>
+                        <th>Amount</th>
+                        <th>Total Value</th>
+                        <th>Timestamp</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Data Rows here -->
+                </tbody>
+            </table>
+        </section>
+    </main>
+
+    <!-- Popup Modal -->
+    <div id="popup" class="popup">
+        <div class="popup-content">
+            <span class="close" onclick="closePopup()">&times;</span>
+            <h2 id="popupTitle">Add Investment</h2>
+            <form id="investmentForm">
+                <label for="asset">Asset:</label>
+                <input type="text" id="asset" name="asset" required>
+                
+                <label for="type">Type:</label>
+                <input type="text" id="type" name="type">
+                
+                <label for="amount">Amount:</label>
+                <input type="number" id="amount" name="amount" required>
+                
+                <label for="value">Value:</label>
+                <input type="number" id="value" name="value" required>
+                
+                <label for="status">Status:</label>
+                <input type="text" id="status" name="status">
+                
+                <label for="date">Date:</label>
+                <input type="date" id="date" name="date">
+                
+                <button type="submit">Add</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
