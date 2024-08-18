@@ -8,7 +8,7 @@ body {
 }
 
 header {
-    padding: 20px 166px;
+    padding: 5px 166px;
     background: white;
     display: flex;
     align-items: center;
@@ -24,19 +24,19 @@ header {
 }
 
 .logo {
-    height: 50px;
+    height: 80px;
     margin-right: 50px;
 }
 
 nav {
-    flex-grow: 1;
+    flex-grow: 1.5;
     display: flex;
     justify-content: center;
 }
 
 nav a {
     margin: 0 20px;
-    font-size: 18px;
+    font-size: 28px;
     color: navy;
     text-decoration: none;
     font-weight: bold;
@@ -45,20 +45,26 @@ nav a {
 }
 
 nav a:hover {
-    color: white;
-    border-bottom: 2px solid navy;
+    color: blue;
+    border-bottom: 2px solid blue;
 }
 
 .user-login {
     display: flex;
     align-items: center;
     color: navy;
-    font-size: 18px;
-    font-weight: bold;
+    font-size: 22px;
+    font-weight: 5px;
+    padding: 0 20px;
 }
 
 .user-login .material-icons {
     margin-right: 10px;
+}
+
+#profile-logo {
+    height: 50px;
+    padding: 0 15px;
 }
 
 hr {
