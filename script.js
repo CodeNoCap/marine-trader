@@ -28,14 +28,75 @@ document.addEventListener('DOMContentLoaded', function() {
     const loginPopup = document.getElementById("loginPopup");
     const blurBackground = document.getElementById("blurBackground");
     const loginButton = document.getElementById("loginButton");
+    
+    function deleteActiveInvestment(id) {
+        // Get the row data
+        const row = document.getElementById(`active-${id}`);
+        const rowData = {
+            name: row.querySelector(".name").textContent,
+            amount: parseFloat(row.querySelector(".amount").textContent.replace('$', '').replace(',', '')),
+            value: parseFloat(row.querySelector(".value").textContent.replace('$', '').replace(',', '')),
+            pool: parseFloat(row.querySelector(".pool").textContent.replace('%', '').replace(',', '')),
+            type: "Delete investment",
+            date: new Date().toLocaleString()
+        };
+    
+        // Add to investment history
+        db.collection('investment_history').add(rowData).then(() => {
+            // Remove from active investments
+            db.collection('active_investments').doc(id).delete().then(() => {
+                // Remove row from DOM
+                row.remove();
+            });
+        });
+    }
+    
+    // Function to delete an investment history entry
+    function deleteInvestmentHistory(id) {
+        // Get the row data
+        const row = document.getElementById(`history-${id}`);
+        const amount = parseFloat(row.querySelector(".amount").textContent.replace('$', '').replace(',', ''));
+        const value = parseFloat(row.querySelector(".value").textContent.replace('$', '').replace(',', ''));
+        const pool = parseFloat(row.querySelector(".pool").textContent.replace('%', '').replace(',', ''));
+    
+        // Update the active investments totals
+        db.collection('active_investments').get().then(snapshot => {
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                db.collection('active_investments').doc(doc.id).update({
+                    amount: firebase.firestore.FieldValue.increment(amount),
+                    value: firebase.firestore.FieldValue.increment(value),
+                    pool: firebase.firestore.FieldValue.increment(pool)
+                });
+            });
+        }).then(() => {
+            // Remove from investment history
+            db.collection('investment_history').doc(id).delete().then(() => {
+                // Remove row from DOM
+                row.remove();
+            });
+        });
+    }
+    
+    // Event listeners for delete icons
+    document.querySelectorAll(".delete-active").forEach(icon => {
+        icon.addEventListener("click", function() {
+            const id = this.closest("tr").getAttribute("data-id");
+            deleteActiveInvestment(id);
+        });
+    });
+    
+    document.querySelectorAll(".delete-history").forEach(icon => {
+        icon.addEventListener("click", function() {
+            const id = this.closest("tr").getAttribute("data-id");
+            deleteInvestmentHistory(id);
+        });
+    });
 
-    // Check if the user is already logged in
     if (!localStorage.getItem("isLoggedIn")) {
-        // Show login popup
         loginPopup.style.display = "block";
         blurBackground.style.display = "block";
     } else {
-        // Hide login popup and background blur if already logged in
         loginPopup.style.display = "none";
         blurBackground.style.display = "none";
     }
@@ -96,8 +157,10 @@ document.addEventListener('DOMContentLoaded', function() {
             await setDoc(cardsRef, {
                 availableBalance: availableBalanceElement.textContent,
                 totalInvestment: totalInvestmentElement.textContent,
-                profitLoss: profitLossElement.textContent
+                profitLoss: profitLossElement.textContent,
+                profitLossColor: profitLossElement.style.color
             });
+
 
             console.log("%c[SAVED] Data successfully saved", "color: limegreen");
         } catch (error) {
@@ -110,10 +173,10 @@ document.addEventListener('DOMContentLoaded', function() {
         totalInvestment = rows.reduce((sum, row) => sum + parseFloat(row.cells[1].textContent), 0);
         totalValue = rows.reduce((sum, row) => sum + parseFloat(row.cells[2].textContent), 0);
 
-        availableBalanceElement.textContent = `$${totalValue.toFixed(2)}`;
-        totalInvestmentElement.textContent = `$${totalInvestment.toFixed(2)}`;
+        availableBalanceElement.textContent = `${formatAsPeso(totalValue.toFixed(2))}`;
+        totalInvestmentElement.textContent = `${formatAsPeso(totalInvestment.toFixed(2))}`;
         const profitLoss = totalValue - totalInvestment;
-        profitLossElement.textContent = `$${profitLoss.toFixed(2)}`;
+        profitLossElement.textContent = `${formatAsPeso(profitLoss.toFixed(2))}`;
         profitLossElement.style.color = profitLoss > 0 ? 'limegreen' : 'red';
 
         // Save updated data
@@ -146,21 +209,21 @@ document.addEventListener('DOMContentLoaded', function() {
         const currentAmount = parseFloat(row.cells[1].textContent);
         const currentValue = parseFloat(row.cells[2].textContent);
 
-        row.cells[1].textContent = currentAmount + amount;
-        row.cells[2].textContent = currentValue + value;
+        row.cells[1].textContent = formatAsPeso(currentAmount + amount);
+        row.cells[2].textContent = formatAsPeso(currentValue + value);
     }
 
     function addOrUpdateActiveInvestment(asset, amount, value, status, date) {
         const existingRow = findRowByAsset(activeInvestmentsTable, asset);
-
+        date = formatDateForAI(date);
         if (existingRow) {
             updateRow(existingRow, amount, value);
         } else {
             const newRow = activeInvestmentsTable.insertRow();
             newRow.innerHTML = `
                 <td contenteditable="true">${asset}</td>
-                <td contenteditable="true">${amount}</td>
-                <td contenteditable="true">${value}</td>
+                <td contenteditable="true">${formatAsPeso(amount)}</td>
+                <td contenteditable="true">${formatAsPeso(value)}</td>
                 <td contenteditable="true">0%</td>
                 <td contenteditable="true">${status}</td>
                 <td contenteditable="true">${date}</td>
@@ -176,9 +239,9 @@ document.addEventListener('DOMContentLoaded', function() {
         newRow.innerHTML = `
             <td>${asset}</td>
             <td>${type}</td>
-            <td>${amount}</td>
-            <td>${value}</td>
-            <td>${date}</td>
+            <td>${formatAsPeso(amount)}</td>
+            <td>${formatAsPeso(value)}</td>
+            <td>${formatDateForHistory(date)}</td>
         `;
     }
 
@@ -264,8 +327,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     const newRow = activeInvestmentsTable.insertRow();
                     newRow.innerHTML = `
                         <td contenteditable="true">${investment.asset}</td>
-                        <td contenteditable="true">${investment.amount}</td>
-                        <td contenteditable="true">${investment.value}</td>
+                        <td contenteditable="true">${formatAsPeso(investment.amount)}</td>
+                        <td contenteditable="true">${formatAsPeso(investment.value)}</td>
                         <td contenteditable="true">${investment.pool}</td>
                         <td contenteditable="true">${investment.status}</td>
                         <td contenteditable="true">${investment.date}</td>
@@ -281,17 +344,18 @@ document.addEventListener('DOMContentLoaded', function() {
                     newRow.innerHTML = `
                         <td>${history.asset}</td>
                         <td>${history.type}</td>
-                        <td>${history.amount}</td>
-                        <td>${history.totalValue}</td>
+                        <td>${formatAsPeso(history.amount)}</td>
+                        <td>${formatAsPeso(history.totalValue)}</td>
                         <td>${history.timestamp}</td>
                     `;
                 });
             }
     
             if (cardsSnapshot.exists()) {
-                availableBalanceElement.textContent = cardsSnapshot.data().availableBalance;
-                totalInvestmentElement.textContent = cardsSnapshot.data().totalInvestment;
-                profitLossElement.textContent = cardsSnapshot.data().profitLoss;
+                availableBalanceElement.textContent = (cardsSnapshot.data().availableBalance);
+                totalInvestmentElement.textContent = (cardsSnapshot.data().totalInvestment);
+                profitLossElement.textContent = (cardsSnapshot.data().profitLoss);
+                profitLossElement.style.color = cardsSnapshot.data().profitLossColor;
             }
     
             console.log("%c[LOADED] Data successfully loaded from Firestore", "color: limegreen");
@@ -323,4 +387,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Load data from Firestore when the page loads
     loadFirestoreData();
+
+    function formatDateForAI(dateString) {
+        const date = new Date(dateString);
+        return `${date.toLocaleString('default', { month: 'short' })} ${date.getDate()}`;
+    }
+    
+    function formatDateForHistory(dateString) {
+        const date = new Date(dateString);
+        return `${date.toLocaleString('default', { month: 'short' })} ${date.getDate()} ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}`;
+    }
+
+    function formatAsPeso(value) {
+        return `₱ ${value.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    }
 });
