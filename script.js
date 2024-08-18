@@ -17,6 +17,7 @@ const db = getFirestore(app);
 
 
 document.addEventListener('DOMContentLoaded', function() {
+    console.log("%c[LOADED] Version 0.9", "color: cyan")
     const activeInvestmentsTable = document.getElementById('activeInvestmentsTable').getElementsByTagName('tbody')[0];
     const investmentHistoryTable = document.getElementById('investmentHistoryTable').getElementsByTagName('tbody')[0];
     const availableBalanceElement = document.getElementById('availableBalance').getElementsByTagName('p')[0];
