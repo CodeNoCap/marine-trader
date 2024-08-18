@@ -1,6 +1,22 @@
-document.addEventListener('DOMContentLoaded', function () {
-    const popup = document.getElementById('popup');
-    const investmentForm = document.getElementById('investmentForm');
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.8/firebase-app.js" ;
+import { getFirestore, doc, setDoc, getDoc, collection } from "https://www.gstatic.com/firebasejs/9.6.8/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDdkTTiJ1aU01BRtTJNSBTLgILGlrrjp_c",
+  authDomain: "marine-trader-6aeaf.firebaseapp.com",
+  projectId: "marine-trader-6aeaf",
+  storageBucket: "marine-trader-6aeaf.appspot.com",
+  messagingSenderId: "710444092896",
+  appId: "1:710444092896:web:764efd3519d99960eb6f85",
+  measurementId: "G-H5HWNEW6SD"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+
+document.addEventListener('DOMContentLoaded', function() {
     const activeInvestmentsTable = document.getElementById('activeInvestmentsTable').getElementsByTagName('tbody')[0];
     const investmentHistoryTable = document.getElementById('investmentHistoryTable').getElementsByTagName('tbody')[0];
     const availableBalanceElement = document.getElementById('availableBalance').getElementsByTagName('p')[0];
@@ -8,11 +24,106 @@ document.addEventListener('DOMContentLoaded', function () {
     const profitLossElement = document.getElementById('profitLoss').getElementsByTagName('p')[0];
     let totalInvestment = 0;
     let totalValue = 0;
+    const loginPopup = document.getElementById("loginPopup");
+    const blurBackground = document.getElementById("blurBackground");
+    const loginButton = document.getElementById("loginButton");
 
-    // Load data when the page loads
-    loadData();
+    // Check if the user is already logged in
+    if (!localStorage.getItem("isLoggedIn")) {
+        // Show login popup
+        loginPopup.style.display = "block";
+        blurBackground.style.display = "block";
+    } else {
+        // Hide login popup and background blur if already logged in
+        loginPopup.style.display = "none";
+        blurBackground.style.display = "none";
+    }
 
-    investmentForm.addEventListener('submit', function (event) {
+    // Handle login button click
+    loginButton.addEventListener("click", function () {
+        const username = document.getElementById("username").value;
+        const password = document.getElementById("password").value;
+
+        // Simple validation (you can replace this with a real authentication check)
+        if (username === "marinetrader" && password === "MarineTraderAdmin01!") {
+            // Save login state to local storage
+            localStorage.setItem("isLoggedIn", true);
+
+            // Hide login popup and background blur
+            loginPopup.style.display = "none";
+            blurBackground.style.display = "none";
+
+            console.log("%c[LOGIN SUCCESS] User logged in successfully", "color: limegreen");
+        } else {
+            alert("Invalid credentials. Please try again.");
+        }
+    });
+
+    async function saveDataToFirestore() {
+        const aiData = [];
+        Array.from(activeInvestmentsTable.rows).forEach(row => {
+            aiData.push({
+                asset: row.cells[0].textContent,
+                amount: parseFloat(row.cells[1].textContent),
+                value: parseFloat(row.cells[2].textContent),
+                pool: row.cells[3].textContent,
+                status: row.cells[4].textContent,
+                date: row.cells[5].textContent
+            });
+        });
+
+        const ihData = [];
+        Array.from(investmentHistoryTable.rows).forEach(row => {
+            ihData.push({
+                asset: row.cells[0].textContent,
+                type: row.cells[1].textContent,
+                amount: parseFloat(row.cells[2].textContent),
+                totalValue: parseFloat(row.cells[3].textContent),
+                timestamp: row.cells[4].textContent
+            });
+        });
+
+        // Save to Firestore
+        try {
+            const aiRef = doc(db, 'user_data', 'activeInvestments');
+            await setDoc(aiRef, { investments: aiData });
+
+            const ihRef = doc(db, 'user_data', 'investmentHistory');
+            await setDoc(ihRef, { history: ihData });
+
+            const cardsRef = doc(db, 'user_data', 'cards');
+            await setDoc(cardsRef, {
+                availableBalance: availableBalanceElement.textContent,
+                totalInvestment: totalInvestmentElement.textContent,
+                profitLoss: profitLossElement.textContent
+            });
+
+            console.log("%c[SAVED] Data successfully saved", "color: limegreen");
+        } catch (error) {
+            console.error("Error saving data to Firestore: ", error);
+        }
+    }
+
+    function updateHoldings() {
+        const rows = Array.from(activeInvestmentsTable.rows);
+        totalInvestment = rows.reduce((sum, row) => sum + parseFloat(row.cells[1].textContent), 0);
+        totalValue = rows.reduce((sum, row) => sum + parseFloat(row.cells[2].textContent), 0);
+
+        availableBalanceElement.textContent = `$${totalValue.toFixed(2)}`;
+        totalInvestmentElement.textContent = `$${totalInvestment.toFixed(2)}`;
+        const profitLoss = totalValue - totalInvestment;
+        profitLossElement.textContent = `$${profitLoss.toFixed(2)}`;
+        profitLossElement.style.color = profitLoss > 0 ? 'limegreen' : 'red';
+
+        // Save updated data
+        saveDataToFirestore();
+    }
+
+    function findRowByAsset(table, asset) {
+        return Array.from(table.rows).find(row => row.cells[0].textContent === asset);
+    }
+
+    investmentForm.addEventListener('submit', function(event) {
         event.preventDefault();
 
         const asset = investmentForm.asset.value;
@@ -26,10 +137,17 @@ document.addEventListener('DOMContentLoaded', function () {
         addToInvestmentHistory(asset, type, amount, value, date);
 
         updateHoldings();
-        saveData(); // Save data after updating
 
         closePopup();
     });
+
+    function updateRow(row, amount, value) {
+        const currentAmount = parseFloat(row.cells[1].textContent);
+        const currentValue = parseFloat(row.cells[2].textContent);
+
+        row.cells[1].textContent = currentAmount + amount;
+        row.cells[2].textContent = currentValue + value;
+    }
 
     function addOrUpdateActiveInvestment(asset, amount, value, status, date) {
         const existingRow = findRowByAsset(activeInvestmentsTable, asset);
@@ -50,7 +168,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         updatePools();
-        saveData(); // Save data after updating
     }
 
     function addToInvestmentHistory(asset, type, amount, value, date) {
@@ -62,19 +179,6 @@ document.addEventListener('DOMContentLoaded', function () {
             <td>${value}</td>
             <td>${date}</td>
         `;
-        saveData(); // Save data after updating
-    }
-
-    function findRowByAsset(table, asset) {
-        return Array.from(table.rows).find(row => row.cells[0].textContent === asset);
-    }
-
-    function updateRow(row, amount, value) {
-        const currentAmount = parseFloat(row.cells[1].textContent);
-        const currentValue = parseFloat(row.cells[2].textContent);
-
-        row.cells[1].textContent = currentAmount + amount;
-        row.cells[2].textContent = currentValue + value;
     }
 
     function updatePools() {
@@ -85,18 +189,8 @@ document.addEventListener('DOMContentLoaded', function () {
             const amount = parseFloat(row.cells[1].textContent);
             row.cells[3].textContent = ((amount / totalAmount) * 100).toFixed(2) + '%';
         });
-    }
 
-    function updateHoldings() {
-        const rows = Array.from(activeInvestmentsTable.rows);
-        totalInvestment = rows.reduce((sum, row) => sum + parseFloat(row.cells[1].textContent), 0);
-        totalValue = rows.reduce((sum, row) => sum + parseFloat(row.cells[2].textContent), 0);
-
-        availableBalanceElement.textContent = `$${totalValue.toFixed(2)}`;
-        totalInvestmentElement.textContent = `$${totalInvestment.toFixed(2)}`;
-        const profitLoss = totalValue - totalInvestment;
-        profitLossElement.textContent = `$${profitLoss.toFixed(2)}`;
-        profitLossElement.style.color = profitLoss > 0 ? 'limegreen' : 'red';
+        saveDataToFirestore();
     }
 
     function attachEditListeners(row) {
@@ -104,61 +198,108 @@ document.addEventListener('DOMContentLoaded', function () {
             cell.addEventListener('input', () => {
                 updatePools();
                 updateHoldings();
-                saveData(); // Save data after editing
             });
         });
     }
 
-    // Function to save data to local storage
-    function saveData() {
-        const activeInvestments = Array.from(activeInvestmentsTable.rows).map(row => {
-            return Array.from(row.cells).map(cell => cell.textContent);
+    async function saveDataToFirestore() {
+        const aiData = [];
+        Array.from(activeInvestmentsTable.rows).forEach(row => {
+            aiData.push({
+                asset: row.cells[0].textContent,
+                amount: parseFloat(row.cells[1].textContent),
+                value: parseFloat(row.cells[2].textContent),
+                pool: row.cells[3].textContent,
+                status: row.cells[4].textContent,
+                date: row.cells[5].textContent
+            });
         });
-
-        const investmentHistory = Array.from(investmentHistoryTable.rows).map(row => {
-            return Array.from(row.cells).map(cell => cell.textContent);
+    
+        const ihData = [];
+        Array.from(investmentHistoryTable.rows).forEach(row => {
+            ihData.push({
+                asset: row.cells[0].textContent,
+                type: row.cells[1].textContent,
+                amount: parseFloat(row.cells[2].textContent),
+                totalValue: parseFloat(row.cells[3].textContent),
+                timestamp: row.cells[4].textContent
+            });
         });
-
-        const holdings = {
-            availableBalance: availableBalanceElement.textContent,
-            totalInvestment: totalInvestmentElement.textContent,
-            profitLoss: profitLossElement.textContent,
-            profitLossColor: profitLossElement.style.color
-        };
-
-        localStorage.setItem('activeInvestments', JSON.stringify(activeInvestments));
-        localStorage.setItem('investmentHistory', JSON.stringify(investmentHistory));
-        localStorage.setItem('holdings', JSON.stringify(holdings));
-
-        console.log("%c[SAVED] Data successfully saved", "color: limegreen");
+    
+        // Save to Firestore
+        try {
+            const aiRef = doc(db, 'user_data', 'activeInvestments');
+            await setDoc(aiRef, { investments: aiData });
+    
+            const ihRef = doc(db, 'user_data', 'investmentHistory');
+            await setDoc(ihRef, { history: ihData });
+    
+            const cardsRef = doc(db, 'user_data', 'cards');
+            await setDoc(cardsRef, {
+                availableBalance: availableBalanceElement.textContent,
+                totalInvestment: totalInvestmentElement.textContent,
+                profitLoss: profitLossElement.textContent
+            });
+    
+            console.log("%c[SAVED] Data successfully saved", "color: limegreen");
+        } catch (error) {
+            console.error("Error saving data to Firestore: ", error);
+        }
     }
-
-    // Function to load data from local storage
-    function loadData() {
-        const activeInvestments = JSON.parse(localStorage.getItem('activeInvestments') || '[]');
-        const investmentHistory = JSON.parse(localStorage.getItem('investmentHistory') || '[]');
-        const holdings = JSON.parse(localStorage.getItem('holdings') || '{}');
-
-        activeInvestments.forEach(rowData => {
-            const newRow = activeInvestmentsTable.insertRow();
-            newRow.innerHTML = rowData.map(cellData => `<td contenteditable="true">${cellData}</td>`).join('');
-            attachEditListeners(newRow);
-        });
-
-        investmentHistory.forEach(rowData => {
-            const newRow = investmentHistoryTable.insertRow();
-            newRow.innerHTML = rowData.map(cellData => `<td>${cellData}</td>`).join('');
-        });
-
-        if (holdings.availableBalance) {
-            availableBalanceElement.textContent = holdings.availableBalance;
-            totalInvestmentElement.textContent = holdings.totalInvestment;
-            profitLossElement.textContent = holdings.profitLoss;
-            profitLossElement.style.color = holdings.profitLossColor;
+    
+    async function loadFirestoreData() {
+        try {
+            const aiRef = doc(db, 'user_data', 'activeInvestments');
+            const ihRef = doc(db, 'user_data', 'investmentHistory');
+            const cardsRef = doc(db, 'user_data', 'cards');
+    
+            const aiSnapshot = await getDoc(aiRef);
+            const ihSnapshot = await getDoc(ihRef);
+            const cardsSnapshot = await getDoc(cardsRef);
+    
+            if (aiSnapshot.exists()) {
+                activeInvestmentsTable.innerHTML = '';
+                aiSnapshot.data().investments.forEach(investment => {
+                    const newRow = activeInvestmentsTable.insertRow();
+                    newRow.innerHTML = `
+                        <td contenteditable="true">${investment.asset}</td>
+                        <td contenteditable="true">${investment.amount}</td>
+                        <td contenteditable="true">${investment.value}</td>
+                        <td contenteditable="true">${investment.pool}</td>
+                        <td contenteditable="true">${investment.status}</td>
+                        <td contenteditable="true">${investment.date}</td>
+                    `;
+                    attachEditListeners(newRow);
+                });
+            }
+    
+            if (ihSnapshot.exists()) {
+                investmentHistoryTable.innerHTML = '';
+                ihSnapshot.data().history.forEach(history => {
+                    const newRow = investmentHistoryTable.insertRow();
+                    newRow.innerHTML = `
+                        <td>${history.asset}</td>
+                        <td>${history.type}</td>
+                        <td>${history.amount}</td>
+                        <td>${history.totalValue}</td>
+                        <td>${history.timestamp}</td>
+                    `;
+                });
+            }
+    
+            if (cardsSnapshot.exists()) {
+                availableBalanceElement.textContent = cardsSnapshot.data().availableBalance;
+                totalInvestmentElement.textContent = cardsSnapshot.data().totalInvestment;
+                profitLossElement.textContent = cardsSnapshot.data().profitLoss;
+            }
+    
+            console.log("%c[LOADED] Data successfully loaded from Firestore", "color: limegreen");
+        } catch (error) {
+            console.error("Error loading data from Firestore: ", error);
         }
     }
 
-    window.openPopup = function (type) {
+    window.openPopup = function(type) {
         const titleMap = {
             ai: 'Add Active Investment',
             ih: 'Add Investment History'
@@ -169,13 +310,16 @@ document.addEventListener('DOMContentLoaded', function () {
         popup.style.display = 'block';
     }
 
-    window.closePopup = function () {
+    window.closePopup = function() {
         popup.style.display = 'none';
     }
 
-    window.onclick = function (event) {
+    window.onclick = function(event) {
         if (event.target === popup) {
             closePopup();
         }
     }
+
+    // Load data from Firestore when the page loads
+    loadFirestoreData();
 });

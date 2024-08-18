@@ -7,6 +7,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script type="module" src="script.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jwt-decode/build/jwt-decode.min.js"></script>
 </head>
 <body>
     <header>
@@ -115,6 +117,16 @@
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <div id="loginPopup" class="login-popup">
+        <div class="login-container">
+            <img src="./assets/icon.png" alt="Marine Trader Logo" class="login-logo">
+            <h2>Sign in to Marine Trader</h2>
+            <input type="text" id="username" placeholder="Username" required>
+            <input type="password" id="password" placeholder="Password" required>
+            <button id="loginButton">Login</button>
+        </div>
+    </div>
+    <div id="blurBackground" class="blur-background"></div>
+
 </body>
 </html>
