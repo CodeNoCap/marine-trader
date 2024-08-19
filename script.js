@@ -164,8 +164,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 <td contenteditable="true">0%</td>
                 <td contenteditable="true">${status}</td>
                 <td contenteditable="true">${date}</td>
+                <td><span class="material-icons delete-icon">delete</span></td>
             `;
             attachEditListeners(newRow);
+            addDeleteFunctionality(newRow, 'ai');
         }
 
         updatePools();
@@ -179,7 +181,9 @@ document.addEventListener('DOMContentLoaded', function() {
             <td>${formatAsPeso(amount)}</td>
             <td>${formatAsPeso(value)}</td>
             <td>${formatDateForHistory(date)}</td>
+            <td><span class="material-icons delete-icon">delete</span></td>
         `;
+        addDeleteFunctionality(newRow, 'ih');
     }
 
     function updatePools() {
@@ -225,8 +229,10 @@ document.addEventListener('DOMContentLoaded', function() {
                         <td contenteditable="true">${investment.pool}</td>
                         <td contenteditable="true">${investment.status}</td>
                         <td contenteditable="true">${investment.date}</td>
+                        <td><span class="material-icons delete-icon">delete</span></td>
                     `;
                     attachEditListeners(newRow);
+                    addDeleteFunctionality(newRow, 'ai');
                 });
             }
 
@@ -240,7 +246,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         <td>${formatAsPeso(history.amount)}</td>
                         <td>${formatAsPeso(history.totalValue)}</td>
                         <td>${history.timestamp}</td>
+                        <td><span class="material-icons delete-icon">delete</span></td>
                     `;
+                    addDeleteFunctionality(newRow, 'ih');
                 });
             }
 
@@ -300,4 +308,37 @@ document.addEventListener('DOMContentLoaded', function() {
         return parseFloat(pesoString.replace('₱', '').replace(/,/g, '').trim());
     }
 
-});
+    function addDeleteFunctionality(row, tableType) {
+        const deleteIcon = row.querySelector('.delete-icon');
+        deleteIcon.addEventListener('click', function () {
+            const cells = row.cells;
+
+            if (tableType === 'ai') {
+                const asset = cells[0].textContent;
+                const amount = parseFloat(cells[1].textContent.replace(/[^0-9.-]+/g,""));
+                const value = parseFloat(cells[2].textContent.replace(/[^0-9.-]+/g,""));
+                const pool = cells[3].textContent;
+                const status = cells[4].textContent;
+                const date = cells[5].textContent;
+
+
+                // Add to Investment History
+                const historyRow = investmentHistoryTable.insertRow();
+                historyRow.innerHTML = `
+                    <td>${asset}</td>
+                    <td>Delete investment</td>
+                    <td>${formatAsPeso(amount.toFixed(2))}</td>
+                    <td>${formatAsPeso(value.toFixed(2))}</td>
+                    <td>${formatDateForHistory(new Date())}</td>
+                    <td><span class="material-icons delete-icon">delete</span></td>
+                `;
+                addDeleteFunctionality(historyRow, 'ih');
+            }
+            
+            row.remove();
+            updatePools();
+            updateHoldings();
+            saveDataToFirestore();
+        });
+    }
+  });
