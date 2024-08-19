@@ -352,9 +352,9 @@ button[type="submit"]:hover {
     }
 
     #holdings h1 {
-        font-size: 26px;
+        font-size: 22px;
         margin-bottom: 5px;
-        margin-top: 0px;
+        margin-top: -30px;
     }
 
     table {
@@ -367,6 +367,8 @@ button[type="submit"]:hover {
         white-space: normal;
         max-width: 50px;
         word-wrap: break-word;
+        font-family: 'Roboto', sans-serif;
+        font-weight: 100;
     }
 
     .table-section h2 {
@@ -383,4 +385,11 @@ button[type="submit"]:hover {
     }
 }
 
-@media ()
+@media (max-width: 480px) {
+    .holdings-cards {
+        flex-wrap: nowrap; /* Allow cards to wrap onto next line if necessary */
+        scale: 55%;
+        margin: -35px -35vw;
+        padding: -5%;
+    }
+}
