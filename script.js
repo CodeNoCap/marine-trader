@@ -28,70 +28,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const loginPopup = document.getElementById("loginPopup");
     const blurBackground = document.getElementById("blurBackground");
     const loginButton = document.getElementById("loginButton");
-    
-    function deleteActiveInvestment(id) {
-        // Get the row data
-        const row = document.getElementById(`active-${id}`);
-        const rowData = {
-            name: row.querySelector(".name").textContent,
-            amount: parseFloat(row.querySelector(".amount").textContent.replace('$', '').replace(',', '')),
-            value: parseFloat(row.querySelector(".value").textContent.replace('$', '').replace(',', '')),
-            pool: parseFloat(row.querySelector(".pool").textContent.replace('%', '').replace(',', '')),
-            type: "Delete investment",
-            date: new Date().toLocaleString()
-        };
-    
-        // Add to investment history
-        db.collection('investment_history').add(rowData).then(() => {
-            // Remove from active investments
-            db.collection('active_investments').doc(id).delete().then(() => {
-                // Remove row from DOM
-                row.remove();
-            });
-        });
-    }
-    
-    // Function to delete an investment history entry
-    function deleteInvestmentHistory(id) {
-        // Get the row data
-        const row = document.getElementById(`history-${id}`);
-        const amount = parseFloat(row.querySelector(".amount").textContent.replace('$', '').replace(',', ''));
-        const value = parseFloat(row.querySelector(".value").textContent.replace('$', '').replace(',', ''));
-        const pool = parseFloat(row.querySelector(".pool").textContent.replace('%', '').replace(',', ''));
-    
-        // Update the active investments totals
-        db.collection('active_investments').get().then(snapshot => {
-            snapshot.forEach(doc => {
-                const data = doc.data();
-                db.collection('active_investments').doc(doc.id).update({
-                    amount: firebase.firestore.FieldValue.increment(amount),
-                    value: firebase.firestore.FieldValue.increment(value),
-                    pool: firebase.firestore.FieldValue.increment(pool)
-                });
-            });
-        }).then(() => {
-            // Remove from investment history
-            db.collection('investment_history').doc(id).delete().then(() => {
-                // Remove row from DOM
-                row.remove();
-            });
-        });
-    }
-    
-    // Event listeners for delete icons
-    document.querySelectorAll(".delete-active").forEach(icon => {
-        icon.addEventListener("click", function() {
-            const id = this.closest("tr").getAttribute("data-id");
-            deleteActiveInvestment(id);
-        });
-    });
-    
-    document.querySelectorAll(".delete-history").forEach(icon => {
-        icon.addEventListener("click", function() {
-            const id = this.closest("tr").getAttribute("data-id");
-            deleteInvestmentHistory(id);
-        });
-    });
+
 
     if (!localStorage.getItem("isLoggedIn")) {
         loginPopup.style.display = "block";
@@ -126,8 +63,8 @@ document.addEventListener('DOMContentLoaded', function() {
         Array.from(activeInvestmentsTable.rows).forEach(row => {
             aiData.push({
                 asset: row.cells[0].textContent,
-                amount: parseFloat(row.cells[1].textContent),
-                value: parseFloat(row.cells[2].textContent),
+                amount: parsePesoString(row.cells[1].textContent), // Parse peso string back to float
+                value: parsePesoString(row.cells[2].textContent),  // Parse peso string back to float
                 pool: row.cells[3].textContent,
                 status: row.cells[4].textContent,
                 date: row.cells[5].textContent
@@ -139,8 +76,8 @@ document.addEventListener('DOMContentLoaded', function() {
             ihData.push({
                 asset: row.cells[0].textContent,
                 type: row.cells[1].textContent,
-                amount: parseFloat(row.cells[2].textContent),
-                totalValue: parseFloat(row.cells[3].textContent),
+                amount: parsePesoString(row.cells[2].textContent), // Parse peso string back to float
+                totalValue: parsePesoString(row.cells[3].textContent), // Parse peso string back to float
                 timestamp: row.cells[4].textContent
             });
         });
@@ -155,12 +92,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const cardsRef = doc(db, 'user_data', 'cards');
             await setDoc(cardsRef, {
-                availableBalance: availableBalanceElement.textContent,
-                totalInvestment: totalInvestmentElement.textContent,
-                profitLoss: profitLossElement.textContent,
+                availableBalance: parsePesoString(availableBalanceElement.textContent), // Parse peso string back to float
+                totalInvestment: parsePesoString(totalInvestmentElement.textContent), // Parse peso string back to float
+                profitLoss: parsePesoString(profitLossElement.textContent), // Parse peso string back to float
                 profitLossColor: profitLossElement.style.color
             });
-
 
             console.log("%c[SAVED] Data successfully saved", "color: limegreen");
         } catch (error) {
@@ -168,10 +104,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // Function to update the UI with formatted values but keep the calculations in float
     function updateHoldings() {
         const rows = Array.from(activeInvestmentsTable.rows);
-        totalInvestment = rows.reduce((sum, row) => sum + parseFloat(row.cells[1].textContent), 0);
-        totalValue = rows.reduce((sum, row) => sum + parseFloat(row.cells[2].textContent), 0);
+        totalInvestment = rows.reduce((sum, row) => sum + parsePesoString(row.cells[1].textContent), 0); // Use float values for sum
+        totalValue = rows.reduce((sum, row) => sum + parsePesoString(row.cells[2].textContent), 0); // Use float values for sum
 
         availableBalanceElement.textContent = `${formatAsPeso(totalValue.toFixed(2))}`;
         totalInvestmentElement.textContent = `${formatAsPeso(totalInvestment.toFixed(2))}`;
@@ -247,10 +184,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function updatePools() {
         const rows = Array.from(activeInvestmentsTable.rows);
-        const totalAmount = rows.reduce((sum, row) => sum + parseFloat(row.cells[1].textContent), 0);
+        const totalAmount = rows.reduce((sum, row) => sum + parsePesoString(row.cells[1].textContent), 0);
 
         rows.forEach(row => {
-            const amount = parseFloat(row.cells[1].textContent);
+            const amount = parsePesoString(row.cells[1].textContent);
             row.cells[3].textContent = ((amount / totalAmount) * 100).toFixed(2) + '%';
         });
 
@@ -266,61 +203,17 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    async function saveDataToFirestore() {
-        const aiData = [];
-        Array.from(activeInvestmentsTable.rows).forEach(row => {
-            aiData.push({
-                asset: row.cells[0].textContent,
-                amount: parseFloat(row.cells[1].textContent),
-                value: parseFloat(row.cells[2].textContent),
-                pool: row.cells[3].textContent,
-                status: row.cells[4].textContent,
-                date: row.cells[5].textContent
-            });
-        });
-    
-        const ihData = [];
-        Array.from(investmentHistoryTable.rows).forEach(row => {
-            ihData.push({
-                asset: row.cells[0].textContent,
-                type: row.cells[1].textContent,
-                amount: parseFloat(row.cells[2].textContent),
-                totalValue: parseFloat(row.cells[3].textContent),
-                timestamp: row.cells[4].textContent
-            });
-        });
-    
-        // Save to Firestore
-        try {
-            const aiRef = doc(db, 'user_data', 'activeInvestments');
-            await setDoc(aiRef, { investments: aiData });
-    
-            const ihRef = doc(db, 'user_data', 'investmentHistory');
-            await setDoc(ihRef, { history: ihData });
-    
-            const cardsRef = doc(db, 'user_data', 'cards');
-            await setDoc(cardsRef, {
-                availableBalance: availableBalanceElement.textContent,
-                totalInvestment: totalInvestmentElement.textContent,
-                profitLoss: profitLossElement.textContent
-            });
-    
-            console.log("%c[SAVED] Data successfully saved", "color: limegreen");
-        } catch (error) {
-            console.error("Error saving data to Firestore: ", error);
-        }
-    }
     
     async function loadFirestoreData() {
         try {
             const aiRef = doc(db, 'user_data', 'activeInvestments');
             const ihRef = doc(db, 'user_data', 'investmentHistory');
             const cardsRef = doc(db, 'user_data', 'cards');
-    
+
             const aiSnapshot = await getDoc(aiRef);
             const ihSnapshot = await getDoc(ihRef);
             const cardsSnapshot = await getDoc(cardsRef);
-    
+
             if (aiSnapshot.exists()) {
                 activeInvestmentsTable.innerHTML = '';
                 aiSnapshot.data().investments.forEach(investment => {
@@ -336,7 +229,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     attachEditListeners(newRow);
                 });
             }
-    
+
             if (ihSnapshot.exists()) {
                 investmentHistoryTable.innerHTML = '';
                 ihSnapshot.data().history.forEach(history => {
@@ -350,14 +243,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     `;
                 });
             }
-    
+
             if (cardsSnapshot.exists()) {
-                availableBalanceElement.textContent = (cardsSnapshot.data().availableBalance);
-                totalInvestmentElement.textContent = (cardsSnapshot.data().totalInvestment);
-                profitLossElement.textContent = (cardsSnapshot.data().profitLoss);
+                availableBalanceElement.textContent = formatAsPeso(cardsSnapshot.data().availableBalance);
+                totalInvestmentElement.textContent = formatAsPeso(cardsSnapshot.data().totalInvestment);
+                profitLossElement.textContent = formatAsPeso(cardsSnapshot.data().profitLoss);
                 profitLossElement.style.color = cardsSnapshot.data().profitLossColor;
             }
-    
+
             console.log("%c[LOADED] Data successfully loaded from Firestore", "color: limegreen");
         } catch (error) {
             console.error("Error loading data from Firestore: ", error);
@@ -399,6 +292,12 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function formatAsPeso(value) {
-        return `₱ ${value.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        return `₱ ${parseFloat(value).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     }
+
+    function parsePesoString(pesoString) {
+        // Removes ₱ and commas, then converts to float
+        return parseFloat(pesoString.replace('₱', '').replace(/,/g, '').trim());
+    }
+
 });

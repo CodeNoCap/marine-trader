@@ -62,6 +62,10 @@ nav a:hover {
     margin-right: 10px;
 }
 
+body, nav a, .user-login, .card h2, .card p {
+    white-space: nowrap; /* Prevents text wrapping */
+}
+
 #profile-logo {
     height: 50px;
     padding: 0 15px;
@@ -303,19 +307,75 @@ button[type="submit"]:hover {
     background-color: darkblue;
 }
 
-/* Responsive Styles */
 @media (max-width: 1024px) {
     header, hr, .content {
-        padding-left: 30px;
-        padding-right: 30px;
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+
+    .logo {
+        height: 60px; /* Reduce logo size */
+        width: auto;
+        margin-left: 15px;
+        margin-right: 10px;
+    }
+
+
+    .header-content > * {
+        width: auto; /* Make each item take full width */
+    }
+
+    nav {
+        flex-direction: flex; /* Stack navigation links vertically */
+        margin-left: 0px;
+    }
+
+    nav a {
+        margin: 5px 10px; /* Adjust margins for vertical stacking */
+        font-size: 18px; /* Smaller font size */
+    }
+
+    .user-login {
+        display: none; /* Hide user login on small screens */
     }
 
     .holdings-cards {
-        flex-direction: column;
-        align-items: center;
+        flex-wrap: wrap; /* Allow cards to wrap onto next line if necessary */
     }
 
     .card {
-        margin: 10px 0;
+        margin: 0px 0; /* Adjust card margins */
+        scale: 85%;
+    }
+
+    #holdings h1 {
+        font-size: 26px;
+        margin-bottom: 5px;
+        margin-top: 0px;
+    }
+
+    table {
+        font-size: 10px; /* Smaller font size for table text */
+        flex-wrap: nowrap;
+    }
+
+    th, td {
+        padding: 5px; /* Slightly reduced padding */
+        white-space: normal;
+        max-width: 50px;
+        word-wrap: break-word;
+    }
+
+    .table-section h2 {
+        font-size: 20px;
+        margin-bottom: 5px;
+    }
+
+    .card h2 {
+        font-size: 20px; /* Smaller heading size inside cards */
+    }
+
+    .card p {
+        font-size: 28px; /* Adjust paragraph size inside cards */
     }
 }
