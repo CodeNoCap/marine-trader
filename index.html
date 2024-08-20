@@ -1,0 +1,154 @@
+<!-- index.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marine Trader</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script type="module" src="script.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jwt-decode/build/jwt-decode.min.js"></script>
+    <link href="https://fonts.googleapis.com/css?family=Roboto:400,700italic,400italic,700" rel="stylesheet">
+
+    
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <img src="./assets/icon-text.png" alt="Marine Trader Logo" class="logo">
+            <nav>
+                <a href="#">About Us</a>
+                <a href="#holdings">Holdings</a>
+                <a href="#">Services</a>
+            </nav>
+            <div class="user-login">
+                <img src="./assets/icon-logo.png" id="profile-logo"></span>
+                <span>Marine Trader</span>
+            </div>
+        </div>
+    </header>
+    <hr>
+    <main id="holdings" class="content">
+        <h1>HOLDINGS</h1>
+        <section class="holdings-cards">
+            <div class="card" id="availableBalance">
+                <h2>Available Balance</h2>
+                <p>₱0.00</p>
+            </div>
+            <div class="card" id="totalInvestment">
+                <h2>Total Investment</h2>
+                <p>₱0.00</p>
+            </div>
+            <div class="card" id="profitLoss">
+                <h2>Profit & Losses</h2>
+                <p>₱0.00</p>
+            </div>
+        </section>
+
+        <section class="table-section">
+            <h2>Active Investments</h2>
+            <button class="add-button" onclick="openPopup('ai')">
+                <span class="material-icons">add</span>
+            </button>
+            <table id="activeInvestmentsTable">
+                <thead>
+                    <tr>
+                        <th>Asset</th>
+                        <th>Amount</th>
+                        <th>Value</th>
+                        <th>Pool</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Data Rows here -->
+                </tbody>
+            </table>
+        </section>
+
+        <section class="table-section">
+            <h2>Investment History</h2>
+            <button class="add-button" onclick="openPopup('ih')">
+                <span class="material-icons">add</span>
+            </button>
+            <table id="investmentHistoryTable">
+                <thead>
+                    <tr>
+                        <th>Asset</th>
+                        <th>Type</th>
+                        <th>Amount</th>
+                        <th>Total Value</th>
+                        <th>Timestamp</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Data Rows here -->
+                </tbody>
+            </table>
+        </section>
+    </main>
+
+    <!-- Popup Modal -->
+    <div class="popup" id="popup">
+    <div class="popup-content">
+        <span class="close" id="closePopup">&times;</span>
+        <h2 id="popupTitle">Add New Investment</h2>
+        <form id="investmentForm">
+            <label for="name">Name</label>
+            <input type="text" id="name" placeholder="Enter investment name" required>
+
+            <label for="type">Type</label>
+            <select id="type" required>
+                <option value="" disabled selected>Select Type</option>
+                <option value="Cryptocurrency">Cryptocurrency</option>
+                <option value="On-hand">On-hand</option>
+                <option value="Business">Business</option>
+                <option value="In wallet">In wallet</option>
+            </select>
+                
+            <label for="amount">Amount:</label>
+            <input type="number" id="amount" name="amount" required>
+            
+            <label for="value">Value:</label>
+            <input type="number" id="value" name="value" required>
+            
+            <label for="date">Date:</label>
+            <input type="date" id="date" name="date">
+
+            <label for="status">Status</label>
+            <select id="status" required>
+                <option value="" disabled selected>Select Status</option>
+                <option value="Holding">Holding</option>
+                <option value="Pending Payment">Pending Payment</option>
+                <option value="Available">Available</option>
+            </select>
+
+            <label for="qty" id="qtyLabel" style="display: none;">Quantity</label>
+            <input type="number" id="qty" placeholder="Enter quantity" style="display: none;">
+
+            <button type="submit">Add Investment</button>
+        </form>
+    </div>
+</div>
+
+    <div id="loginPopup" class="login-popup">
+        <div class="login-container">
+            <img src="./assets/icon.png" alt="Marine Trader Logo" class="login-logo">
+            <h2>Sign in to Marine Trader</h2>
+            <input type="text" id="username" placeholder="Username" required>
+            <input type="password" id="password" placeholder="Password" required>
+            <button id="loginButton">Login</button>
+        </div>
+    </div>
+    <div id="blurBackground" class="blur-background"></div>
+
+</body>
+</html>
+
+ 
