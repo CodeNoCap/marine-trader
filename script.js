@@ -414,19 +414,14 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     async function fetchCryptoPrice(asset) {
-        const apiKey = '2680c8e8-dd06-4c5b-8751-57824a0c8a88';
-        const url = `https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest?symbol=${asset}&convert=PHP`;
+        const url = `http://localhost:5000/crypto-price?symbol=${asset}`;  // Pointing to your proxy server
     
         try {
-            const response = await fetch(url, {
-                headers: {
-                    'X-CMC_PRO_API_KEY': apiKey
-                }
-            });
+            const response = await fetch(url);
             const data = await response.json();
             return data.data[asset].quote.PHP.price;
         } catch (error) {
-            console.error("Error fetching cryptocurrency data: ", error);
+            console.error("Error fetching cryptocurrency data from proxy server: ", error);
             return null;
         }
     }
