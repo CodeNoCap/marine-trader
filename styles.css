@@ -62,6 +62,15 @@ nav a:hover {
     margin-right: 10px;
 }
 
+#investmentHistoryTable .material-icons {
+    font-size: 15px;
+}
+
+#activeInvestmentsTable .material-icons {
+    font-size: 15px;
+}
+
+
 body, nav a, .user-login, .card h2, .card p {
     white-space: nowrap; /* Prevents text wrapping */
 }
@@ -251,6 +260,15 @@ thead {
     cursor: pointer;
 }
 
+#investmentForm label,
+#investmentForm input,
+#investmentForm select,
+#investmentForm button {
+    display: block;
+    width: 100%;
+
+}
+
 button[type="submit"] {
     background-color: navy;
     color: white;
@@ -261,6 +279,7 @@ button[type="submit"] {
     font-family: 'Outfit', sans-serif;
     font-weight: bold;
     transition: background-color 0.3s;
+    margin-top: 30px;
 }
 
 button[type="submit"]:hover {
@@ -473,6 +492,6 @@ button[type="submit"]:hover {
 
     .popup-content {
         scale: 65%;
-        margin-top: -120px;
+        margin-top: -50px;
     }
 }

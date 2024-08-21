@@ -28,18 +28,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const loginPopup = document.getElementById("loginPopup");
     const blurBackground = document.getElementById("blurBackground");
     const loginButton = document.getElementById("loginButton");
-    let typeChipClass = {
-        'Cryptocurrency': 'chip-cryptocurrency',
-        'On-hand': 'chip-on-hand',
-        'Business': 'chip-business',
-        'In wallet': 'chip-in-wallet'
-    }[type];
-
-    let statusChipClass = {
-        'Holding': 'chip-holding',
-        'Pending Payment': 'chip-pending',
-        'Available': 'chip-available'
-    }[status];
+    const hiddenQtyStorage = {};
+    const hiddenTypeStorage = {};
+    
+    document.getElementById('closePopup').addEventListener('click', function() {
+        closePopup();
+    })
 
     if (!localStorage.getItem("isLoggedIn")) {
         loginPopup.style.display = "block";
@@ -56,10 +50,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Simple validation (you can replace this with a real authentication check)
         if (username === "marinetrader" && password === "MarineTraderAdmin01!") {
-            // Save login state to local storage
             localStorage.setItem("isLoggedIn", true);
 
-            // Hide login popup and background blur
             loginPopup.style.display = "none";
             blurBackground.style.display = "none";
 
@@ -72,13 +64,30 @@ document.addEventListener('DOMContentLoaded', function() {
     async function saveDataToFirestore() {
         const aiData = [];
         Array.from(activeInvestmentsTable.rows).forEach(row => {
+            const asset = row.cells[0].textContent;
+            const amount = parsePesoString(row.cells[1].textContent);
+            const value = parsePesoString(row.cells[2].textContent);
+            const pool = row.cells[3].textContent;
+            const status = row.cells[4].textContent;
+            const date = row.cells[5].textContent;
+            
+            let qty = null;
+            let type = null;
+            if (hiddenTypeStorage[asset] === 'Cryptocurrency') {
+                qty = hiddenQtyStorage[asset] || 0; 
+            }
+
+            type = hiddenTypeStorage[asset];
+
             aiData.push({
-                asset: row.cells[0].textContent,
-                amount: parsePesoString(row.cells[1].textContent), // Parse peso string back to float
-                value: parsePesoString(row.cells[2].textContent),  // Parse peso string back to float
-                pool: row.cells[3].textContent,
-                status: row.cells[4].textContent,
-                date: row.cells[5].textContent
+                asset,
+                amount,
+                value,
+                pool,
+                status,
+                date,
+                qty,
+                type
             });
         });
 
@@ -135,6 +144,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return Array.from(table.rows).find(row => row.cells[0].textContent === asset);
     }
 
+    
     investmentForm.addEventListener('submit', function(event) {
         event.preventDefault();
 
@@ -144,7 +154,11 @@ document.addEventListener('DOMContentLoaded', function() {
         const value = parseFloat(investmentForm.value.value);
         const status = investmentForm.status.value;
         const date = investmentForm.date.value;
+        const qty = investmentForm.qty.value;
 
+        hiddenQtyStorage[asset] = qty;
+        hiddenTypeStorage[asset] = type;
+        
         addOrUpdateActiveInvestment(asset, amount, value, status, date);
         addToInvestmentHistory(asset, type, amount, value, date);
 
@@ -162,6 +176,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function addOrUpdateActiveInvestment(asset, amount, value, status, date) {
+        
+        
         const existingRow = findRowByAsset(activeInvestmentsTable, asset);
         date = formatDateForAI(date);
         const statusChipClass = {
@@ -243,6 +259,10 @@ document.addEventListener('DOMContentLoaded', function() {
             if (aiSnapshot.exists()) {
                 activeInvestmentsTable.innerHTML = '';
                 aiSnapshot.data().investments.forEach(investment => {
+                    hiddenTypeStorage[investment.asset] = investment.type;
+                    if (investment.type === 'Cryptocurrency' && investment.qty) {
+                        hiddenQtyStorage[investment.asset] = investment.qty;
+
                     const statusChipClass = {
                         'Holding': 'chip-holding',
                         'Pending Payment': 'chip-pending',
@@ -261,6 +281,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     `;
                     attachEditListeners(newRow);
                     addDeleteFunctionality(newRow, 'ai');
+                
+                    }
                 });
             }
             
@@ -298,6 +320,7 @@ document.addEventListener('DOMContentLoaded', function() {
         } catch (error) {
             console.error("Error loading data from Firestore: ", error);
         }
+        updateCryptocurrencyValues();
     }
 
     window.openPopup = function(type) {
@@ -323,6 +346,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Load data from Firestore when the page loads
     loadFirestoreData();
+
 
     function formatDateForAI(dateString) {
         const date = new Date(dateString);
@@ -388,6 +412,48 @@ document.addEventListener('DOMContentLoaded', function() {
             saveDataToFirestore();
         });
     }
+
+    async function fetchCryptoPrice(asset) {
+        const apiKey = '2680c8e8-dd06-4c5b-8751-57824a0c8a88';
+        const url = `https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest?symbol=${asset}&convert=PHP`;
+    
+        try {
+            const response = await fetch(url, {
+                headers: {
+                    'X-CMC_PRO_API_KEY': apiKey
+                }
+            });
+            const data = await response.json();
+            return data.data[asset].quote.PHP.price;
+        } catch (error) {
+            console.error("Error fetching cryptocurrency data: ", error);
+            return null;
+        }
+    }
+
+    async function updateCryptocurrencyValues() {
+        for (const asset in hiddenTypeStorage) {
+            if (hiddenTypeStorage[asset] === 'Cryptocurrency') {
+                
+                const qty = hiddenQtyStorage[asset];
+                if (qty) {
+                    const tokenPrice = await fetchCryptoPrice(asset); // Function to fetch price from API
+                    const currentValue = tokenPrice * qty;
+                    console.log(`%c[CRYPTO PRICE]: ${asset} is now of ${currentValue}`, "color: blue");
+
+                    // Find the corresponding row and update the value
+                    const row = findRowByAsset(activeInvestmentsTable, asset);
+                    if (row) {
+                        row.cells[2].textContent = formatAsPeso(currentValue.toFixed(2));
+                    }
+                }
+            }
+        }
+        
+        updateHoldings(); // Update overall holdings
+    }
+
+    
   });
 
 // 2680c8e8-dd06-4c5b-8751-57824a0c8a88
