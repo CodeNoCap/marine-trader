@@ -1,28 +1,23 @@
 const express = require('express');
-const axios = require('axios');
-const cors = require('cors');
-
+const request = require('request');
 const app = express();
-const PORT = process.env.PORT || 5000;
 
-app.use(cors());
+const API_KEY = process.env.COINMARKETCAP_API_KEY; // Store your API key in Heroku environment variables
 
-app.get('/crypto-price', async (req, res) => {
-    const { symbol } = req.query;
-    const apiKey = '2680c8e8-dd06-4c5b-8751-57824a0c8a88'; // Your CoinMarketCap API key
+app.get('/api/:symbol', (req, res) => {
+    const symbol = req.params.symbol;
+    const url = `https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest?symbol=${symbol}&convert=PHP`;
 
-    try {
-        const response = await axios.get(`https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest?symbol=${symbol}&convert=PHP`, {
-            headers: {
-                'X-CMC_PRO_API_KEY': apiKey
-            }
-        });
-        res.json(response.data);
-    } catch (error) {
-        res.status(500).json({ error: 'Error fetching data from CoinMarketCap API' });
-    }
+    request({ url, headers: { 'X-CMC_PRO_API_KEY': API_KEY } }, (error, response, body) => {
+        if (error) {
+            return res.status(500).send('Error fetching data.');
+        }
+        res.setHeader('Access-Control-Allow-Origin', '*'); // Allow CORS
+        res.send(body);
+    });
 });
 
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Proxy server running on port ${PORT}`);
 });

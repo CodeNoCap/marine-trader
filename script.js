@@ -346,6 +346,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Load data from Firestore when the page loads
     loadFirestoreData();
+    
 
 
     function formatDateForAI(dateString) {
@@ -414,17 +415,18 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     async function fetchCryptoPrice(asset) {
-        const url = `http://localhost:5000/crypto-price?symbol=${asset}`;  // Pointing to your proxy server
-    
+        const url = `https://coinmarketcap-proxy-374e97342789.herokuapp.com/api/${asset}`;
+        
         try {
             const response = await fetch(url);
             const data = await response.json();
             return data.data[asset].quote.PHP.price;
         } catch (error) {
-            console.error("Error fetching cryptocurrency data from proxy server: ", error);
+            console.error("Error fetching cryptocurrency data: ", error);
             return null;
         }
     }
+    
 
     async function updateCryptocurrencyValues() {
         for (const asset in hiddenTypeStorage) {
@@ -448,7 +450,101 @@ document.addEventListener('DOMContentLoaded', function() {
         updateHoldings(); // Update overall holdings
     }
 
+    // Responsive behavior to hide columns
+    function updateTableLayout() {
+        const screenWidth = window.innerWidth;
+        const rows = document.querySelectorAll('#active-investments-table tr');
+        
+        rows.forEach(row => {
+            const amountCell = row.querySelector('.amount');
+            const poolCell = row.querySelector('.pool');
+            const deleteCell = row.querySelector('.delete');
+            
+            if (screenWidth <= 480) {
+                amountCell.style.display = 'none';
+                poolCell.style.display = 'none';
+                deleteCell.style.display = 'none';
+                
+                // Show amount and pool% on hover
+                row.addEventListener('mouseenter', () => {
+                    row.setAttribute('data-hover', `Amount: ${amountCell.textContent}, Pool: ${poolCell.textContent}`);
+                });
+                
+                row.addEventListener('mouseleave', () => {
+                    row.removeAttribute('data-hover');
+                });
+                console.log("%c[LOAD SUCCESSFUL] Table updated!", "color: pink");
+            } else {
+                amountCell.style.display = '';
+                poolCell.style.display = '';
+                deleteCell.style.display = '';
+                
+                row.removeEventListener('mouseenter', null);
+                row.removeEventListener('mouseleave', null);
+            }
+        });
+    }
     
-  });
+    // Calculate and display profit percentage
+    function calculateAndDisplayProfit() {
+        const rows = document.querySelectorAll('#active-investments-table tr');
+        
+        rows.forEach(row => {
+            const amount = parseFloat(row.querySelector('.amount').textContent.replace(/[^0-9.-]+/g, ""));
+            const value = parseFloat(row.querySelector('.value').textContent.replace(/[^0-9.-]+/g, ""));
+            
+            const profitPercent = ((value - amount) / amount) * 100;
+            const profitCell = document.createElement('div');
+            profitCell.textContent = `Profit: ${profitPercent.toFixed(2)}%`;
+            profitCell.style.color = profitPercent > 0 ? 'limegreen' : 'red';
+            
+            row.querySelector('.value').appendChild(profitCell);
+        });
+    }
+    
+    // Delete toggle functionality
+    let deleteMode = false;
+    
+    function toggleDeleteMode() {
+        deleteMode = !deleteMode;
+        const deleteButton = document.querySelector('#delete-toggle-button');
+        deleteButton.classList.toggle('active', deleteMode);
+        
+        const rows = document.querySelectorAll('#active-investments-table tr');
+        
+        rows.forEach(row => {
+            if (deleteMode) {
+                row.addEventListener('click', handleRowDelete);
+            } else {
+                row.removeEventListener('click', handleRowDelete);
+            }
+        });
+    }
+    
+    function handleRowDelete(event) {
+        if (deleteMode) {
+            const row = event.currentTarget;
+            const confirmed = confirm('Are you sure you want to delete this row?');
+            
+            if (confirmed) {
+                row.remove();
+                // You may also need to handle moving the row to 'Investment History' if applicable
+            }
+        }
+    }
+    
+    // Event listeners
+    window.addEventListener('resize', updateTableLayout);
+    window.addEventListener('DOMContentLoaded', () => {
+        updateTableLayout();
+        calculateAndDisplayProfit();
+    });
+    
+    document.querySelector('#delete-toggle-button').addEventListener('click', toggleDeleteMode);
+    
+
+    
+});
 
 // 2680c8e8-dd06-4c5b-8751-57824a0c8a88
+

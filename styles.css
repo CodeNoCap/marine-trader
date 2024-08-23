@@ -479,6 +479,11 @@ button[type="submit"]:hover {
     .card p {
         font-size: 28px; /* Adjust paragraph size inside cards */
     }
+
+    #delete-toggle-button.active {
+        background-color: red;
+        color: white;
+    }
 }
 
 @media (max-width: 480px) {
@@ -492,5 +497,21 @@ button[type="submit"]:hover {
     .popup-content {
         scale: 65%;
         margin-top: -50px;
+    }
+
+    .amount, .pool, .delete {
+        display: none;
+    }
+    
+    #active-investments-table tr[data-hover]:after {
+        content: attr(data-hover);
+        position: absolute;
+        background: #333;
+        color: white;
+        padding: 5px;
+        border-radius: 5px;
+        top: 100%;
+        left: 0;
+        white-space: nowrap;
     }
 }
