@@ -247,81 +247,81 @@ document.addEventListener('DOMContentLoaded', function() {
 
     
     async function loadFirestoreData() {
-        try {
-            const aiRef = doc(db, 'user_data', 'activeInvestments');
-            const ihRef = doc(db, 'user_data', 'investmentHistory');
-            const cardsRef = doc(db, 'user_data', 'cards');
+    try {
+        const aiRef = doc(db, 'user_data', 'activeInvestments');
+        const ihRef = doc(db, 'user_data', 'investmentHistory');
+        const cardsRef = doc(db, 'user_data', 'cards');
 
-            const aiSnapshot = await getDoc(aiRef);
-            const ihSnapshot = await getDoc(ihRef);
-            const cardsSnapshot = await getDoc(cardsRef);
+        const aiSnapshot = await getDoc(aiRef);
+        const ihSnapshot = await getDoc(ihRef);
+        const cardsSnapshot = await getDoc(cardsRef);
 
-            if (aiSnapshot.exists()) {
-                activeInvestmentsTable.innerHTML = '';
-                aiSnapshot.data().investments.forEach(investment => {
-                    hiddenTypeStorage[investment.asset] = investment.type;
-                    if (investment.type === 'Cryptocurrency' && investment.qty) {
-                        hiddenQtyStorage[investment.asset] = investment.qty;
+        if (aiSnapshot.exists()) {
+            activeInvestmentsTable.innerHTML = '';
+            aiSnapshot.data().investments.forEach(investment => {
+                hiddenTypeStorage[investment.asset] = investment.type;
+                if (investment.type === 'Cryptocurrency' && investment.qty) {
+                    hiddenQtyStorage[investment.asset] = investment.qty;
+                }
 
-                    const statusChipClass = {
-                        'Holding': 'chip-holding',
-                        'Pending Payment': 'chip-pending',
-                        'Available': 'chip-available'
-                    }[investment.status];
-            
-                    const newRow = activeInvestmentsTable.insertRow();
-                    newRow.innerHTML = `
-                        <td contenteditable="true">${investment.asset}</td>
-                        <td contenteditable="true">${formatAsPeso(investment.amount)}</td>
-                        <td contenteditable="true">${formatAsPeso(investment.value)}</td>
-                        <td contenteditable="true">${investment.pool}</td>
-                        <td contenteditable="true"><span class="chip ${statusChipClass}">${investment.status}</span></td>
-                        <td contenteditable="true">${investment.date}</td>
-                        <td><span class="material-icons delete-icon">delete</span></td>
-                    `;
-                    attachEditListeners(newRow);
-                    addDeleteFunctionality(newRow, 'ai');
-                
-                    }
-                });
-            }
-            
-            if (ihSnapshot.exists()) {
-                investmentHistoryTable.innerHTML = '';
-                ihSnapshot.data().history.forEach(history => {
-                    const typeChipClass = {
-                        'Cryptocurrency': 'chip-cryptocurrency',
-                        'On-hand': 'chip-on-hand',
-                        'Business': 'chip-business',
-                        'In wallet': 'chip-in-wallet'
-                    }[history.type];
-            
-                    const newRow = investmentHistoryTable.insertRow();
-                    newRow.innerHTML = `
-                        <td>${history.asset}</td>
-                        <td><span class="chip ${typeChipClass}">${history.type}</span></td>
-                        <td>${formatAsPeso(history.amount)}</td>
-                        <td>${formatAsPeso(history.totalValue)}</td>
-                        <td>${history.timestamp}</td>
-                        <td><span class="material-icons delete-icon">delete</span></td>
-                    `;
-                    addDeleteFunctionality(newRow, 'ih');
-                });
-            }
-
-            if (cardsSnapshot.exists()) {
-                availableBalanceElement.textContent = formatAsPeso(cardsSnapshot.data().availableBalance);
-                totalInvestmentElement.textContent = formatAsPeso(cardsSnapshot.data().totalInvestment);
-                profitLossElement.textContent = formatAsPeso(cardsSnapshot.data().profitLoss);
-                profitLossElement.style.color = cardsSnapshot.data().profitLossColor;
-            }
-
-            console.log("%c[LOADED] Data successfully loaded from Firestore", "color: limegreen");
-        } catch (error) {
-            console.error("Error loading data from Firestore: ", error);
+                const statusChipClass = {
+                    'Holding': 'chip-holding',
+                    'Pending Payment': 'chip-pending',
+                    'Available': 'chip-available'
+                }[investment.status];
+        
+                const newRow = activeInvestmentsTable.insertRow();
+                newRow.innerHTML = `
+                    <td contenteditable="true">${investment.asset}</td>
+                    <td contenteditable="true">${formatAsPeso(investment.amount)}</td>
+                    <td contenteditable="true">${formatAsPeso(investment.value)}</td>
+                    <td contenteditable="true">${investment.pool}</td>
+                    <td contenteditable="true"><span class="chip ${statusChipClass}">${investment.status}</span></td>
+                    <td contenteditable="true">${investment.date}</td>
+                    <td><span class="material-icons delete-icon">delete</span></td>
+                `;
+                attachEditListeners(newRow);
+                addDeleteFunctionality(newRow, 'ai');
+            });
         }
-        updateCryptocurrencyValues();
+        
+        if (ihSnapshot.exists()) {
+            investmentHistoryTable.innerHTML = '';
+            ihSnapshot.data().history.forEach(history => {
+                const typeChipClass = {
+                    'Cryptocurrency': 'chip-cryptocurrency',
+                    'On-hand': 'chip-on-hand',
+                    'Business': 'chip-business',
+                    'In wallet': 'chip-in-wallet'
+                }[history.type];
+        
+                const newRow = investmentHistoryTable.insertRow();
+                newRow.innerHTML = `
+                    <td>${history.asset}</td>
+                    <td><span class="chip ${typeChipClass}">${history.type}</span></td>
+                    <td>${formatAsPeso(history.amount)}</td>
+                    <td>${formatAsPeso(history.totalValue)}</td>
+                    <td>${history.timestamp}</td>
+                    <td><span class="material-icons delete-icon">delete</span></td>
+                `;
+                addDeleteFunctionality(newRow, 'ih');
+            });
+        }
+
+        if (cardsSnapshot.exists()) {
+            availableBalanceElement.textContent = formatAsPeso(cardsSnapshot.data().availableBalance);
+            totalInvestmentElement.textContent = formatAsPeso(cardsSnapshot.data().totalInvestment);
+            profitLossElement.textContent = formatAsPeso(cardsSnapshot.data().profitLoss);
+            profitLossElement.style.color = cardsSnapshot.data().profitLossColor;
+        }
+
+        console.log("%c[LOADED] Data successfully loaded from Firestore", "color: limegreen");
+    } catch (error) {
+        console.error("Error loading data from Firestore: ", error);
     }
+    updateCryptocurrencyValues();
+}
+
 
     window.openPopup = function(type) {
         const titleMap = {
@@ -449,7 +449,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         updateHoldings(); // Update overall holdings
     }
-
+    /*
     // Responsive behavior to hide columns
     function updateTableLayout() {
         const screenWidth = window.innerWidth;
@@ -484,6 +484,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+    
     
     // Calculate and display profit percentage
     function calculateAndDisplayProfit() {
@@ -541,7 +542,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     document.querySelector('#delete-toggle-button').addEventListener('click', toggleDeleteMode);
-    
+    */
 
     
 });
