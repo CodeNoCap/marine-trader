@@ -299,7 +299,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 newRow.innerHTML = `
                     <td>${history.asset}</td>
                     <td><span class="chip ${typeChipClass}">${history.type}</span></td>
-                    <td>${formatAsPeso(history.amount)}</td>
+                    <td>${formatAsPeso(history.amount)}</tdW>
                     <td>${formatAsPeso(history.totalValue)}</td>
                     <td>${history.timestamp}</td>
                     <td><span class="material-icons delete-icon">delete</span></td>
