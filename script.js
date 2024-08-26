@@ -65,9 +65,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const aiData = [];
         Array.from(activeInvestmentsTable.rows).forEach(row => {
             const asset = row.cells[0].textContent;
-            const amount = parsePesoString(row.cells[1].textContent);
+            const pnl = parsePesoString(row.cells[1].textContent);
             const value = parsePesoString(row.cells[2].textContent);
-            const pool = row.cells[3].textContent;
             const status = row.cells[4].textContent;
             const date = row.cells[5].textContent;
             
@@ -81,9 +80,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
             aiData.push({
                 asset,
-                amount,
+                pnl,
                 value,
-                pool,
                 status,
                 date,
                 qty,
@@ -96,9 +94,9 @@ document.addEventListener('DOMContentLoaded', function() {
             ihData.push({
                 asset: row.cells[0].textContent,
                 type: row.cells[1].textContent,
-                amount: parsePesoString(row.cells[2].textContent), // Parse peso string back to float
+                pnl: parsePesoString(row.cells[2].textContent), // Parse peso string back to float
                 totalValue: parsePesoString(row.cells[3].textContent), // Parse peso string back to float
-                timestamp: row.cells[4].textContent
+                date: row.cells[4].textContent
             });
         });
 
@@ -150,8 +148,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const asset = investmentForm.name.value;
         const type = investmentForm.type.value;
-        const amount = parseFloat(investmentForm.amount.value);
-        const value = parseFloat(investmentForm.value.value);
+        const pnl = parseFloat(investmentForm.pnl.value);
+        const value = parseFloat(investmentForm.pnl.value);
         const status = investmentForm.status.value;
         const date = investmentForm.date.value;
         const qty = investmentForm.qty.value;
@@ -159,23 +157,21 @@ document.addEventListener('DOMContentLoaded', function() {
         hiddenQtyStorage[asset] = qty;
         hiddenTypeStorage[asset] = type;
         
-        addOrUpdateActiveInvestment(asset, amount, value, status, date);
-        addToInvestmentHistory(asset, type, amount, value, date);
+        addOrUpdateActiveInvestment(asset, pnl, value, status, date);
+        addToInvestmentHistory(asset, type, pnl, value, date);
 
         updateHoldings();
 
         closePopup();
     });
 
-    function updateRow(row, amount, value) {
-        const currentAmount = parseFloat(row.cells[1].textContent);
+    function updateRow(row, value) {
         const currentValue = parseFloat(row.cells[2].textContent);
 
-        row.cells[1].textContent = formatAsPeso(currentAmount + amount);
         row.cells[2].textContent = formatAsPeso(currentValue + value);
     }
 
-    function addOrUpdateActiveInvestment(asset, amount, value, status, date) {
+    function addOrUpdateActiveInvestment(asset, pnl, value, status, date) {
         
         
         const existingRow = findRowByAsset(activeInvestmentsTable, asset);
@@ -191,7 +187,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const newRow = activeInvestmentsTable.insertRow();
             newRow.innerHTML = `
                 <td contenteditable="true">${asset}</td>
-                <td contenteditable="true">${formatAsPeso(amount)}</td>
+                <td contenteditable="true">${pnl}</td>
                 <td contenteditable="true">${formatAsPeso(value)}</td>
                 <td contenteditable="true">0%</td>
                 <td><span class="chip ${statusChipClass}">${status}</span></td>
@@ -205,7 +201,7 @@ document.addEventListener('DOMContentLoaded', function() {
         updatePools();
     }
 
-    function addToInvestmentHistory(asset, type, amount, value, date) {
+    function addToInvestmentHistory(asset, type, pnl, value, date) {
         const newRow = investmentHistoryTable.insertRow();
         const typeChipClass = {
             'Cryptocurrency': 'chip-cryptocurrency',
@@ -213,10 +209,11 @@ document.addEventListener('DOMContentLoaded', function() {
             'Business': 'chip-business',
             'In wallet': 'chip-in-wallet'
         }[type];
+
         newRow.innerHTML = `
             <td>${asset}</td>
             <td><span class="chip ${typeChipClass}">${type}</span></td>
-            <td>${formatAsPeso(amount)}</td>
+            <td>${pnl}</td>
             <td>${formatAsPeso(value)}</td>
             <td>${formatDateForHistory(date)}</td>
             <td><span class="material-icons delete-icon">delete</span></td>
@@ -224,22 +221,9 @@ document.addEventListener('DOMContentLoaded', function() {
         addDeleteFunctionality(newRow, 'ih');
     }
 
-    function updatePools() {
-        const rows = Array.from(activeInvestmentsTable.rows);
-        const totalAmount = rows.reduce((sum, row) => sum + parsePesoString(row.cells[1].textContent), 0);
-
-        rows.forEach(row => {
-            const amount = parsePesoString(row.cells[1].textContent);
-            row.cells[3].textContent = ((amount / totalAmount) * 100).toFixed(2) + '%';
-        });
-
-        saveDataToFirestore();
-    }
-
     function attachEditListeners(row) {
         Array.from(row.cells).forEach(cell => {
             cell.addEventListener('input', () => {
-                updatePools();
                 updateHoldings();
             });
         });
@@ -273,9 +257,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 const newRow = activeInvestmentsTable.insertRow();
                 newRow.innerHTML = `
                     <td contenteditable="true">${investment.asset}</td>
-                    <td contenteditable="true">${formatAsPeso(investment.amount)}</td>
+                    <td contenteditable="true">${investment.pnl}</td>
                     <td contenteditable="true">${formatAsPeso(investment.value)}</td>
-                    <td contenteditable="true">${investment.pool}</td>
                     <td contenteditable="true"><span class="chip ${statusChipClass}">${investment.status}</span></td>
                     <td contenteditable="true">${investment.date}</td>
                     <td><span class="material-icons delete-icon">delete</span></td>
@@ -299,9 +282,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 newRow.innerHTML = `
                     <td>${history.asset}</td>
                     <td><span class="chip ${typeChipClass}">${history.type}</span></td>
-                    <td>${formatAsPeso(history.amount)}</tdW>
+                    <td>${history.pnl}</tdW>
                     <td>${formatAsPeso(history.totalValue)}</td>
-                    <td>${history.timestamp}</td>
+                    <td>${history.date}</td>
                     <td><span class="material-icons delete-icon">delete</span></td>
                 `;
                 addDeleteFunctionality(newRow, 'ih');
@@ -387,7 +370,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (tableType === 'ai') {
                 const asset = cells[0].textContent;
-                const amount = parseFloat(cells[1].textContent.replace(/[^0-9.-]+/g,""));
+                const pnl = cells[1].textContent;
                 const value = parseFloat(cells[2].textContent.replace(/[^0-9.-]+/g,""));
                 const pool = cells[3].textContent;
                 const status = cells[4].textContent;
@@ -399,7 +382,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 historyRow.innerHTML = `
                     <td>${asset}</td>
                     <td>Delete investment</td>
-                    <td>${formatAsPeso(amount.toFixed(2))}</td>
+                    <td>${pnl}</td>
                     <td>${formatAsPeso(value.toFixed(2))}</td>
                     <td>${formatDateForHistory(new Date())}</td>
                     <td><span class="material-icons delete-icon">delete</span></td>
@@ -408,7 +391,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             row.remove();
-            updatePools();
             updateHoldings();
             saveDataToFirestore();
         });
