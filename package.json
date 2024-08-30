@@ -4,8 +4,8 @@
   "description": "Official Website of the Marine Trader",
   "main": "script.js",
   "scripts": {
-    "test": "test",
-    "start": "start"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node crypto-proxy-server/index.js"
   },
   "repository": {
     "type": "git",
