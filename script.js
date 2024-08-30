@@ -1,20 +1,5 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.8/firebase-app.js" ;
-import { getFirestore, doc, setDoc, getDoc, collection } from "https://www.gstatic.com/firebasejs/9.6.8/firebase-firestore.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyDdkTTiJ1aU01BRtTJNSBTLgILGlrrjp_c",
-  authDomain: "marine-trader-6aeaf.firebaseapp.com",
-  projectId: "marine-trader-6aeaf",
-  storageBucket: "marine-trader-6aeaf.appspot.com",
-  messagingSenderId: "710444092896",
-  appId: "1:710444092896:web:764efd3519d99960eb6f85",
-  measurementId: "G-H5HWNEW6SD"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
+import { db } from './firebase.js';
+import { doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.6.8/firebase-firestore.js";
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log("%c[LOADED] Version 0.9", "color: cyan")
@@ -25,41 +10,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const profitLossElement = document.getElementById('profitLoss').getElementsByTagName('p')[0];
     let totalInvestment = 0;
     let totalValue = 0;
-    const loginPopup = document.getElementById("loginPopup");
-    const blurBackground = document.getElementById("blurBackground");
-    const loginButton = document.getElementById("loginButton");
     const hiddenQtyStorage = {};
     const hiddenTypeStorage = {};
-    
-    document.getElementById('closePopup').addEventListener('click', function() {
-        closePopup();
-    })
-
-    if (!localStorage.getItem("isLoggedIn")) {
-        loginPopup.style.display = "block";
-        blurBackground.style.display = "block";
-    } else {
-        loginPopup.style.display = "none";
-        blurBackground.style.display = "none";
-    }
-
-    // Handle login button click
-    loginButton.addEventListener("click", function () {
-        const username = document.getElementById("username").value;
-        const password = document.getElementById("password").value;
-
-        // Simple validation (you can replace this with a real authentication check)
-        if (username === "marinetrader" && password === "MarineTraderAdmin01!") {
-            localStorage.setItem("isLoggedIn", true);
-
-            loginPopup.style.display = "none";
-            blurBackground.style.display = "none";
-
-            console.log("%c[LOGIN SUCCESS] User logged in successfully", "color: limegreen");
-        } else {
-            alert("Invalid credentials. Please try again.");
-        }
-    });
+    const localItemSave = {};
 
     async function saveDataToFirestore() {
         const aiData = [];
@@ -148,16 +101,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const asset = investmentForm.name.value;
         const type = investmentForm.type.value;
-        const pnl = parseFloat(investmentForm.pnl.value);
-        const value = parseFloat(investmentForm.pnl.value);
-        const status = investmentForm.status.value;
+        const value = parseFloat(investmentForm.value.value);
+        const pnl = value - parseFloat(investmentForm.amount.value);
         const date = investmentForm.date.value;
         const qty = investmentForm.qty.value;
 
         hiddenQtyStorage[asset] = qty;
         hiddenTypeStorage[asset] = type;
         
-        addOrUpdateActiveInvestment(asset, pnl, value, status, date);
+        addOrUpdateActiveInvestment(asset, pnl, value, date);
         addToInvestmentHistory(asset, type, pnl, value, date);
 
         updateHoldings();
@@ -198,7 +150,6 @@ document.addEventListener('DOMContentLoaded', function() {
             addDeleteFunctionality(newRow, 'ai');
         }
 
-        updatePools();
     }
 
     function addToInvestmentHistory(asset, type, pnl, value, date) {
@@ -327,10 +278,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Load data from Firestore when the page loads
     loadFirestoreData();
     
-
 
     function formatDateForAI(dateString) {
         const date = new Date(dateString);
@@ -354,12 +303,19 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('type').addEventListener('change', function() {
         var qtyInput = document.getElementById('qty');
         var qtyLabel = document.getElementById('qtyLabel');
+        var valueInput = document.getElementById('value');
+        var valueLabel = document.getElementById('valueLabel');
         if (this.value === 'Cryptocurrency') {
             qtyInput.style.display = 'block';
             qtyLabel.style.display = 'block';
+            valueInput.style.display = 'none';
+            valueLabel.style.display = 'none';
+
         } else {
             qtyInput.style.display = 'none';
             qtyLabel.style.display = 'none';
+            valueInput.style.display = 'block';
+            valueLabel.style.display = 'block';
         }
     });
     

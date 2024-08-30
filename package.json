@@ -1,0 +1,28 @@
+{
+  "name": "marine-trader-master",
+  "version": "1.0.0",
+  "description": "Official Website of the Marine Trader",
+  "main": "script.js",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CodeNoCap/marine-trader.git"
+  },
+  "keywords": [
+    "marine-trader",
+    "cryptocurrency",
+    "crypto",
+    "internationalload",
+    "load",
+    "investments",
+    "stocks"
+  ],
+  "author": "CodeNoCap",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/CodeNoCap/marine-trader/issues"
+  },
+  "homepage": "https://github.com/CodeNoCap/marine-trader#readme"
+}
