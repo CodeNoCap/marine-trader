@@ -4,7 +4,8 @@
   "description": "Official Website of the Marine Trader",
   "main": "script.js",
   "scripts": {
-    "test": "test"
+    "test": "test",
+    "start": "start"
   },
   "repository": {
     "type": "git",
