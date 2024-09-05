@@ -63,11 +63,11 @@ nav a:hover {
 }
 
 #investmentHistoryTable .material-icons {
-    font-size: 15px;
+    font-size: 24px;
 }
 
 #activeInvestmentsTable .material-icons {
-    font-size: 15px;
+    font-size: 24px;
 }
 
 
@@ -113,12 +113,14 @@ h1 {
     background: rgba(60, 60, 90, 0.8);
     border-radius: 12px;
     padding: 20px;
-    flex: 1;
     margin: 0 15px;
     color: white;
     text-align: center;
     border: 2px solid navy;
     transition: transform 0.3s ease;
+    flex: 1 1 calc(50% - 16px); /* Each card takes 50% of the container width minus the gap */
+    box-sizing: border-box; /* Ensure padding and border are included in the width */
+    max-width: calc(50% - 16px); /* Ensure that the card doesn't exceed half of the container width */
 }
 
 .card:hover {
@@ -142,6 +144,7 @@ h1 {
 .table-section {
     margin-bottom: 50px;
     position: relative;
+    margin: 166px;
 }
 
 .table-section h2 {
@@ -204,6 +207,17 @@ thead {
     backdrop-filter: blur(10px); /* Added background blur */
 }
 
+.gcash-popup {
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(10px); /* Added background blur */
+}
+
 .popup-content {
     background-color: white;
     margin: 15% auto;
@@ -223,12 +237,64 @@ thead {
     text-align: center;
 }
 
+#gcash-popup input{
+    width: 50%;
+    padding: 10px;
+    font-size: 16px;
+    margin-right: 4%;
+    box-sizing: border-box; /* Ensure padding is included in the width */
+  }
+
+.button-container button {
+    width: 48%;
+    padding: 10px;
+    font-size: 16px;
+    margin-right: 4%;
+    box-sizing: border-box; /* Ensure padding is included in the width */
+}
+
 #investmentForm label {
     font-size: 16px;
     font-weight: bold;
     color: navy;
     margin-bottom: 8px;
     display: block;
+}
+
+#valueInput {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    box-sizing: border-box;
+    outline: none;
+}
+
+button {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    color: white;
+    background-color: #14212a;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+button:hover {
+    background-color: #0f1b27;
+}
+
+#cancelButton {
+    background-color: #ddd;
+    color: #333;
+}
+
+#cancelButton:hover {
+    background-color: #bbb;
 }
 
 #investmentForm input, 
@@ -402,6 +468,206 @@ button[type="submit"]:hover {
     background-color: green;
 }
 
+.chip-payment {
+    background-color: rgb(164, 100, 4);
+}
+
+.holdings-cards {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.card {
+    background-color: #14212a;
+    color: white;
+    padding: 16px;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.total-card {
+    flex: 1;
+}
+
+.base-wallet {
+    background-color: #001870;
+    color: white;
+    border: 1px solid #001870;
+    padding: 16px;
+}
+
+.base-wallet h2 .secondary-text {
+    color: #b0bec5; /* Secondary font color */
+    font-size: 15px;
+}
+
+.base-wallet h2 {
+    font-size: 32px;
+}
+
+.base-wallet {
+    background-image: url('./assets/gcash-bg.png');
+    background-size: cover;
+    background-position: center;
+}
+
+.crypto-wallet {
+    background-image: url('./assets/crypto-bg.png');
+    background-size: cover;
+    background-position: center;
+    color: white;
+    border: 1px solid #14212a;
+    padding: 16px;
+    position: relative;
+}
+
+.crypto-wallet .crypto-breakdown {
+    display: none;
+    position: absolute;
+    background-color: white;
+    color: #14212a;
+    border: 1px solid #14212a;
+    padding: 8px;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    z-index: 10;
+}
+
+.crypto-wallet:hover .crypto-breakdown {
+    display: block;
+}
+
+.crypto-wallet table {
+    width: 100%;
+}
+
+.crypto-wallet th,
+.crypto-wallet td {
+    text-align: left;
+    padding: 4px;
+}
+
+#investmentForm .date-input-group #date-input {
+    width: 70%;
+}
+
+#investmentForm .date-input-group #date-inputs {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    flex-direction: row;
+
+}
+
+#investmentForm .date-input-group #todayCheckbox {
+    margin: 0 15px; 
+    
+}
+
+.centered-button {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+#test-submit {
+    background-color: #14212a;
+    color: white;
+    padding: 15px 30px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    font-family: 'Outfit', sans-serif;
+    font-weight: bold;
+    transition: background-color 0.3s;
+}
+
+#test-submit:hover {
+    background-color: darkblue;
+}
+
+
+/* Style for the delete popup */
+.delete-popup, .options-popup {
+    display: none; /* Hidden by default */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+    justify-content: center;
+    align-items: center;
+    z-index: 1000; /* Ensure it is above other content */
+}
+
+.delete-popup-content, .options-popup-content {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    position: relative;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+.close-delete-popup, .close-options-popup {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    cursor: pointer;
+    font-size: 20px;
+    color: #888;
+}
+
+.close-delete-popup:hover {
+    color: #333;
+}
+
+.close-options-popup:hover {
+    color: #333;
+}
+
+#confirmDelete, #cancelDelete {
+    background-color: #007bff; /* Blue background */
+    color: #fff; /* White text */
+    border: none;
+    padding: 10px 20px;
+    margin: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+
+#confirmDelete:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+}
+
+#cancelDelete {
+    background-color: #6c757d; /* Gray background */
+}
+
+#cancelDelete:hover {
+    background-color: #5a6268; /* Darker gray on hover */
+}
+
+#popupMessage {
+    display: none;
+    color: red;
+    font-size: 12px;
+    align-items: center;
+    font-family: 'Roboto', 'Sans-serif';
+    margin-top: 10px;
+    padding: 10px;
+    background-color: #ffdbdb;
+    border: 1px solid #e0b0b0;
+    border-radius: 5px;
+    text-align: center;
+}
 
 @media (max-width: 1024px) {
     header, hr, .content {
@@ -487,11 +753,30 @@ button[type="submit"]:hover {
 }
 
 @media (max-width: 480px) {
+
+    header, hr, .content {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+
+    .header-content > * {
+        width: 100%; /* Make each item take full width */
+    }
+
+    nav {
+        flex-direction: flex; /* Stack navigation links vertically */
+        margin-left: 0px;
+    }
+
+    nav a {
+        margin: 5px 5px; /* Adjust margins for vertical stacking */
+        font-size: 4vw; /* Smaller font size */
+    }
+    
     .holdings-cards {
-        flex-wrap: nowrap; /* Allow cards to wrap onto next line if necessary */
+        flex-wrap: wrap;/* Allow cards to wrap onto next line if necessary */
         scale: 55%;
-        margin: -35px -35vw;
-        padding: -5%;
+        margin: -80px -35vw;
     }
 
     .popup-content {
@@ -513,5 +798,29 @@ button[type="submit"]:hover {
         top: 100%;
         left: 0;
         white-space: nowrap;
+    }
+
+    .table-section {
+        margin: 3vw;
+        padding: -50px;
+    }
+
+
+    #investmentHistoryTable .material-icons {
+        font-size: 15px;
+    }
+    
+    #activeInvestmentsTable .material-icons {
+        font-size: 15px;
+    }
+
+    .cards {
+        flex: 1 1 calc(60%); 
+        box-sizing: border-box;
+        max-width: calc(60%);
+    }
+
+    .gcash-popup {
+        padding-top: 200px;
     }
 }

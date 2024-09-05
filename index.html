@@ -9,6 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script type="module" src="addFunctionality.js"></script>
     <script type="module" src="script.js"></script>
     <script src="login.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jwt-decode/build/jwt-decode.min.js"></script>
@@ -33,21 +34,42 @@
     </header>
     <hr>
     <main id="holdings" class="content">
-        <h1>HOLDINGS</h1>
-        <section class="holdings-cards">
-            <div class="card" id="availableBalance">
-                <h2>Available Balance</h2>
-                <p>₱0.00</p>
+    <h1>HOLDINGS</h1>
+    <section class="holdings-cards">
+        <div class="card total-card" id="totalCard">
+            <h2>Total Holdings</h2>
+            <p>₱0.00</p> <!-- Total amount -->
+            <span class="pnl" id="profitLoss">₱0.00 (0%)</span> <!-- PnL with percentage -->
+        </div>
+        <div class="card base-wallet" id="kyleGCash">
+            <h2>GCash <span class="secondary-text">Kyle</span></h2>
+            <p>₱0.00</p> <!-- Kyle's GCash total -->
+        </div>
+        <div class="card base-wallet" id="yongGCash">
+            <h2>GCash <span class="secondary-text">Yong</span></h2>
+            <p>₱0.00</p> <!-- Yong's GCash total -->
+        </div>
+        <div class="card crypto-wallet" id="cryptoWallet">
+            <h2>Crypto Wallet</h2>
+            <p>₱0.00</p> <!-- Crypto total -->
+            <div class="crypto-breakdown">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Asset</th>
+                            <th>Qty</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Crypto asset breakdown rows will go here -->
+                    </tbody>
+                </table>
             </div>
-            <div class="card" id="totalInvestment">
-                <h2>Total Investment</h2>
-                <p>₱0.00</p>
-            </div>
-            <div class="card" id="profitLoss">
-                <h2>Profit & Losses</h2>
-                <p>₱0.00</p>
-            </div>
-        </section>
+        </div>
+    </section>
+</main>
+
 
         <section class="table-section">
             <h2>Active Investments</h2>
@@ -60,6 +82,7 @@
                         <th>Asset</th>
                         <th>PnL</th>
                         <th>Value</th>
+                        <th>Status</th>
                         <th>Date</th>
                         <th></th>
                     </tr>
@@ -99,6 +122,14 @@
         <span class="close" id="closePopup">&times;</span>
         <h2 id="popupTitle">Add New Investment</h2>
         <form id="investmentForm">
+            <label for="source">Source</label>
+            <select id="source" required>
+                <option value="" disabled selected>Select Source</option>
+                <option value="GCash Kyle">GCash Kyle</option>
+                <option value="GCash Yong">GCash Yong</option>
+                <option value="Cryptocurrency">Cryptocurrency</option>
+            </select>
+
             <label for="name">Name</label>
             <input type="text" id="name" placeholder="Enter investment name" required>
 
@@ -106,6 +137,8 @@
             <select id="type" required>
                 <option value="" disabled selected>Select Type</option>
                 <option value="Cryptocurrency">Cryptocurrency</option>
+                <option value="Payment">Payment</option>
+                <option value="Trade">Trade</option>
                 <option value="On-hand">On-hand</option>
                 <option value="Business">Business</option>
                 <option value="In wallet">In wallet</option>
@@ -117,8 +150,14 @@
             <label for="value" id="valueLabel">Value:</label>
             <input type="number" id="value" name="value">
             
-            <label for="date">Date:</label>
-            <input type="date" id="date" name="date">
+            <div class="date-input-group">
+                <label for="date">Date:</label>
+                <div id="date-inputs">
+                <input type="date" id="date-input" name="date" required>
+                <input type="checkbox" id="todayCheckbox" name="isToday" checked>
+                <label for="todayCheckbox">Today</label>
+                </div>
+            </div>
 
             <label for="status">Status</label>
             <select id="status" required>
@@ -132,6 +171,7 @@
             <input type="number" id="qty" step = "any" placeholder="Enter quantity" style="display: none;">
 
             <button type="submit">SUBMIT</button>
+            <div id="popupMessage"></div>
         </form>
     </div>
 </div>
@@ -147,7 +187,43 @@
     </div>
     <div id="blurBackground" class="blur-background"></div>
 
-</body>
+    <div class="popup" id="tradeToHistoryPopup">
+        <div class="popup-content">
+            <span class="close" onclick="closeTradePopup()">&times;</span>
+            <h2>Finalize Trade</h2>
+            <form id="tradeHistoryForm">
+
+                <label for="finalDateTime">Date and Time:</label>
+                <input type="datetime-local" id="finalDateTime" name="finalDateTime" required>
+                <button type="submit">Confirm</button>
+            </form>
+        </div>
+    </div>
+    
+    <div class="centered-button">
+        <button id="test-submit" onclick="testFunction()">Submit</button>
+    </div>
+
+    <div class="delete-popup" id="deletePopup">
+    <div class="delete-popup-content">
+        <span class="close-delete-popup" id="closeDeletePopup">&times;</span>
+        <h2>Confirm Delete</h2>
+        <p id="deleteConfirmationText">Are you sure you want to delete this item?</p>
+        <button id="confirmDelete">Delete</button>
+        <button id="cancelDelete">Cancel</button>
+    </div>
+
+    <div class="row-options-popup" id="optionsPopup">
+        <div class="options-popup-content">
+            <span class="close-options-popup" id="closeOptionsPopup">&times;</span>
+            <h2>Confirm Delete</h2>
+            <p id="optionText">Are you sure you want to delete this item?</p>
+            <!--Add buttons here-->
+            <button id="confirmDelete">Delete</button>
+            <button id="cancelDelete">Cancel</button>
+        </div>
+</div>
+
 </html>
 
  
